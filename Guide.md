@@ -118,33 +118,22 @@ adb shell am start -n package_name/activity_name
 
 ## **Security Testing Checklist**
 
-| Test Case | Status |
-|-----------|--------|
-| Manifest File | ✅ |
-| Deep Links | ✅ |
-| URL Redirection via Misconfigured Deep Links | ✅ |
-| Account Takeover via Deep Links | ✅ |
-| Allow Backup Enabled | ✅ |
-| Debug Mode Enabled | ✅ |
-| Exported Activities | ✅ |
-| Exported Services | ✅ |
-| Content Providers Security | ✅ |
-| Copy-Paste Enabled | ✅ |
-| Custom Keyboard Support | ❌ |
-| Screenshot Information Leakage | ❌ |
-| Tapjacking | ❌ (If React Native, ignore) |
-| Root Detection Bypass | ❌ |
-| No Authentication After Background Resume | ✅ |
-| Sensitive Data in Logs | ✅ |
-| Hardcoded Secrets in Code | ✅ |
-| Certificate Pinning Bypass | ❌ |
-| Internal IP Disclosure | ✅ |
-| Lack of Binary Obfuscation | ✅ |
-| No Logout Functionality | ✅ |
-| Cleartext Traffic Allowed | ❌ |
-| WebView Injection | ✅ |
-| Application Signed with v1 (Janus Vulnerability) | ❌ |
-| Use of Weak Certificates | ✅ |
+Security Testing Checklist
+Test Case	Severity	OWASP Category	Steps to Reproduce	Description	Status (Pass/Fail)
+Hardcoded Secrets in Code	High	M1: Improper Credential Storage	Decompile APK, search for API keys, credentials in strings.xml	Exposes sensitive secrets like API keys	☐ Pass ☐ Fail
+No Root Detection	High	M9: Reverse Engineering	Use Frida to bypass root detection	App should block execution on rooted devices	☐ Pass ☐ Fail
+Certificate Pinning Bypass	High	M3: Insecure Communication	Use Frida to intercept HTTPS traffic	Lack of pinning allows MITM attacks	☐ Pass ☐ Fail
+Sensitive Data in Logs	High	M2: Insecure Data Storage	Run adb logcat and check for sensitive logs	Data exposure in system logs	☐ Pass ☐ Fail
+No Authentication After Background Resume	High	M5: Insufficient Cryptography	Move app to background and return	App should require authentication	☐ Pass ☐ Fail
+URL Redirection via Deep Links	Medium	M7: Client Code Quality	Test deep links with manipulated URLs	Can lead to phishing attacks	☐ Pass ☐ Fail
+Account Takeover via Deep Links	Medium	M7: Client Code Quality	Modify deep link URLs to access unauthorized accounts	Allows unauthorized access	☐ Pass ☐ Fail
+Tapjacking Vulnerability	Medium	M8: Code Tampering	Overlay transparent UI elements	Attacker can hijack interactions	☐ Pass ☐ Fail
+Lack of Binary Obfuscation	Medium	M9: Reverse Engineering	Check for ProGuard usage	Unobfuscated apps are easy to reverse-engineer	☐ Pass ☐ Fail
+WebView Injection	Medium	M7: Client Code Quality	Inject JavaScript into WebView	Can execute arbitrary JavaScript	☐ Pass ☐ Fail
+Allow Backup Enabled	Low	M2: Insecure Data Storage	Check android:allowBackup="true" in manifest	Allows backup extraction of app data	☐ Pass ☐ Fail
+Cleartext Traffic Allowed	Low	M3: Insecure Communication	Check usesCleartextTraffic="true" in manifest	Allows unencrypted traffic	☐ Pass ☐ Fail
+Internal IP Disclosure	Low	M7: Client Code Quality	Inspect network logs for internal IPs	Exposes internal network infrastructure	☐ Pass ☐ Fail
+
 
 ---
 
