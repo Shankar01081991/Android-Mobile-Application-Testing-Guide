@@ -116,28 +116,59 @@ adb shell am start -n package_name/activity_name
 
 ---
 
-## Android Mobile Application Security Test Cases
+## Android Security Testing Checklist
 
 | #  | Test Case                                      | Severity  | OWASP Category                      | Steps to Reproduce | Description | Status (✔/❌) |
-|----|-----------------------------------------------|----------|---------------------------------|------------------|-------------|---------------|
-| 1  | Hardcoded Secrets in Code                    | High     | M1: Improper Credential Storage | Decompile APK, search for API keys, credentials in `strings.xml` | Exposes API keys, credentials | ❌ |
-| 2  | No Root Detection                            | High     | M9: Reverse Engineering        | Use Frida to bypass root detection | App should block execution on rooted devices | ❌ |
-| 3  | Certificate Pinning Bypass                   | High     | M3: Insecure Communication     | Use Frida to intercept HTTPS traffic | Lack of pinning allows MITM attacks | ❌ |
-| 4  | Sensitive Data in Logs                       | High     | M2: Insecure Data Storage      | Run `adb logcat`, check for sensitive data | Data exposure in system logs | ❌ |
-| 5  | No Authentication After Background Resume    | High     | M5: Insufficient Cryptography  | Move app to background and return | App should require authentication | ❌ |
-| 6  | Traffic Analysis - Weak TLS & Ciphers        | High     | M3: Insecure Communication     | Use MITM proxy to inspect TLS version | Weak TLS versions can be exploited | ❌ |
-| 7  | Insecure Storage Analysis                    | High     | M2: Insecure Data Storage      | Check SQLite DB for sensitive data | Data stored unencrypted | ❌ |
-| 8  | Reverse Engineering - Memory Leak           | High     | M9: Reverse Engineering        | Use memory dump analysis tools | Sensitive data may remain in memory | ❌ |
-| 9  | URL Redirection via Deep Links               | Medium   | M7: Client Code Quality        | Test deep links with manipulated URLs | Can lead to phishing attacks | ❌ |
-| 10 | Account Takeover via Deep Links              | Medium   | M7: Client Code Quality        | Modify deep link URLs to access unauthorized accounts | Allows unauthorized access | ❌ |
-| 11 | Tapjacking Vulnerability                     | Medium   | M8: Code Tampering             | Overlay transparent UI elements | Attacker can hijack interactions | ❌ |
-| 12 | Lack of Binary Obfuscation                   | Medium   | M9: Reverse Engineering        | Check for ProGuard usage | Unobfuscated apps are easy to reverse-engineer | ❌ |
-| 13 | WebView Injection                            | Medium   | M7: Client Code Quality        | Inject JavaScript into WebView | Can execute arbitrary JavaScript | ❌ |
-| 14 | WebViews - JavaScript Enabled                | Medium   | M7: Client Code Quality        | Test `loadUrl()` function in WebView | JavaScript can be exploited | ❌ |
-| 15 | Application Declares Max SDK Version         | Low      | M7: Client Code Quality        | Check `maxSdkVersion` in manifest | Limits compatibility and security updates | ❌ |
-| 16 | Allow Backup Enabled                         | Low      | M2: Insecure Data Storage      | Check `android:allowBackup="true"` in manifest | Allows backup extraction of app data | ❌ |
-| 17 | Cleartext Traffic Allowed                    | Low      | M3: Insecure Communication     | Check `usesCleartextTraffic="true"` in manifest | Allows unencrypted traffic | ❌ |
-| 18 | Internal IP Disclosure                       | Low      | M7: Client Code Quality        | Inspect network logs for internal IPs | Exposes internal network infrastructure | ❌ |
+|----|-----------------------------------------------|-----------|-------------------------------------|---------------------|-------------|---------------|
+| 1  | Manifest File Issues                          | Medium    | TBD                                 | Inspect `AndroidManifest.xml` | Configuration flaws in the manifest can expose security risks. | ❌ |
+| 2  | Allow Backup Enabled                         | Medium    | M2: Insecure Data Storage          | Check for `android:allowBackup="true"` | Enabling backup allows attackers to extract app data. | ❌ |
+| 3  | Debug Mode Enabled                           | Medium    | TBD                                 | Check `android:debuggable="true"` | Debugging enabled can expose the app to attackers. | ❌ |
+| 4  | Activity Exposure                            | High      | TBD                                 | Run `adb shell am start -n package/activity` | Exposed activities can be launched by other apps. | ❌ |
+| 5  | Services Exposure                            | High      | TBD                                 | Run `adb shell am startservice -a com.google.firebase.INSTANCE_ID_EVENT` | Services can be started by unauthorized apps. | ❌ |
+| 6  | Content Providers Exposure                   | High      | TBD                                 | Search `AndroidManifest.xml` for `providers` keyword | Exposed content providers can leak sensitive data. | ❌ |
+| 7  | Sensitive Data in Unprotected Content Provider | High  | M2: Insecure Data Storage          | Try accessing provider data via `content://` URI | Sensitive data might be accessible by unauthorized apps. | ❌ |
+| 8  | Content Provider SQL Injection               | High      | M1: Improper Platform Usage        | Inject SQL in content provider queries | Can lead to data leaks or unauthorized access. | ❌ |
+| 9  | Content Provider Path Traversal              | High      | M1: Improper Platform Usage        | Try accessing restricted paths via content provider | Can expose internal app files. | ❌ |
+| 10 | URL Redirection via Deep Links               | Medium    | M7: Client Code Quality            | Test for open redirects in deep link URLs | Can redirect users to malicious sites. | ❌ |
+| 11 | Account Takeover via Deep Links              | High      | M7: Client Code Quality            | Analyze auto-login deep links | Weak deep link security can allow account takeovers. | ❌ |
+| 12 | Insecure Deep Links                          | High      | M7: Client Code Quality            | Test for unprotected intent filters | Attackers can exploit deep links for privilege escalation. | ❌ |
+| 13 | Tapjacking                                   | Medium    | M8: Code Tampering                 | Overlay transparent UI over the app | Can trick users into performing unintended actions. | ❌ |
+| 14 | Custom Keyboard Allowed                      | High      | M2: Insecure Data Storage          | Enable custom keyboards and test data entry | Malicious keyboards can log user input. | ❌ |
+| 15 | Screenshot Information Leakage               | High      | TBD                                 | Capture screenshots in sensitive screens | Sensitive data can be exposed via screenshots. | ❌ |
+| 16 | White Screen Visible in Background           | High      | TBD                                 | Check `/data/system_ce/0/snapshots/` | Previous app state can be leaked. | ❌ |
+| 17 | No Authentication After Background Resume    | High      | M5: Insufficient Cryptography      | Authenticate, switch apps, and resume | If authentication is bypassed, attackers can access user data. | ❌ |
+| 18 | Authentication Bypass                        | High      | M6: Insecure Authorization         | Test login mechanisms for weak implementations | Can allow unauthorized access to user accounts. | ❌ |
+| 19 | No Logout Implemented                        | Medium    | TBD                                 | Check if session persists after logout | Lack of proper logout can lead to session hijacking. | ❌ |
+| 20 | Credential Stored in Memory                  | High      | TBD                                 | Dump memory after login | Credentials remain in memory after logout, leading to leaks. | ❌ |
+| 21 | Sensitive Data Logged to System Logs        | High      | M2: Insecure Data Storage          | Run `adb logcat` and check logs | Logging sensitive data can expose it to attackers. | ❌ |
+| 22 | Unencrypted Local Storage                    | High      | M2: Insecure Data Storage          | Inspect local storage files | Sensitive data should not be stored in plaintext. | ❌ |
+| 23 | No Root Detection                            | High      | M9: Reverse Engineering            | Test app behavior on rooted devices | Rooted devices can bypass security controls. | ❌ |
+| 24 | Certificate Pinning Bypass                   | High      | M3: Insecure Communication         | Use Burp Suite or Frida to intercept traffic | If pinning is not enforced, MITM attacks are possible. | ❌ |
+| 25 | Internal IP Disclosure                       | Medium    | TBD                                 | Inspect responses and error messages | Leaking internal IPs can aid attackers in network enumeration. | ❌ |
+| 26 | Lack of Binary Obfuscation                   | High      | M9: Reverse Engineering            | Decompile the APK and analyze code readability | Unobfuscated code is easier to reverse-engineer. | ❌ |
+| 27 | Vulnerable Cordova/PhoneGap Version         | High      | TBD                                 | Check Cordova version (below 6.4.0 is vulnerable) | Outdated frameworks may have known vulnerabilities. | ❌ |
+| 28 | PhoneGap or Cordova Access Origin Too Broad | High      | TBD                                 | Check `config.xml` for `access origin="*"` | Can allow external JavaScript execution. | ❌ |
+| 29 | WebView Injection                           | High      | M7: Client Code Quality            | Inject JavaScript into WebView | Unprotected WebViews can execute malicious scripts. | ❌ |
+| 30 | Sensitive Data in WebView Cache             | High      | M7: Client Code Quality            | Analyze WebView cache storage | Cached sensitive data can be extracted. | ❌ |
+| 31 | Janus Vulnerability                         | High      | TBD                                 | Check if app is signed only with v1 scheme | v1-only signing is vulnerable to Janus attack. | ❌ |
+| 32 | Weak Certificate Usage                      | High      | TBD                                 | Run `keytool -printcert -file CERT.RSA` | Weak certificates can be exploited by attackers. | ❌ |
+| 33 | Random() Function Used                      | High      | TBD                                 | Check for `java.util.Random()` usage | Weak randomness can lead to predictable values. | ❌ |
+| 34 | `addJavascriptInterface()` Exploitable      | High      | M7: Client Code Quality            | Check if `removeJavascriptInterface()` is missing | Can expose JavaScript to native execution risks. | ❌ |
+| 35 | `loadUrl()` in WebView Without Validation   | High      | M7: Client Code Quality            | Check WebView `loadUrl()` calls | Unvalidated URLs can lead to XSS attacks. | ❌ |
+| 36 | Application Declares a Maximum SDK Version  | Medium    | TBD                                 | Check `maxSdkVersion` in `AndroidManifest.xml` | Can block security updates if misconfigured. | ❌ |
+| 37 | Outdated SSL/TLS Version Used               | High      | M3: Insecure Communication         | Inspect SSL libraries in use | Using outdated TLS versions exposes the app to vulnerabilities. | ❌ |
+
+---
+
+### How to Use This Checklist:
+1. **Severity**: Categorized as **High**, **Medium**, or **Low** based on impact.
+2. **OWASP Category**: Aligned with **OWASP Mobile Top 10** where applicable.
+3. **Steps to Reproduce**: Quick methods to validate each finding.
+4. **Status**: Use **✔ for Pass** and **❌ for Fail** to track issues.
+
+> 🚀 **This checklist helps in performing structured security testing of Android applications.**
+
+
 
 
 ---
