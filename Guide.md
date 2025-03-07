@@ -187,10 +187,7 @@ adb shell am start -n package_name/activity_name
 
 ---
 
-### **Download Checklist**
-The full security checklist is available for download in Excel format. 
 
-**[Download Checklist (Excel)]()**  *(Link to be added)*
 
 ---
 
