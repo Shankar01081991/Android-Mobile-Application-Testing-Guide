@@ -24,7 +24,7 @@ C:\Users\(username)\Downloads\Mobile-Security-Framework-MobSF-master>run.bat
 - Drag and drop the APK file into the browser for analysis.
 
 #### 2. Frida & Objection
-- Open CMD and navigate to the Python scripts directory:
+- Open CMD and navigate to the Python scripts directory :
 ```sh
 cd C:\Users\shank\AppData\Local\Programs\Python\Python39\Scripts
 pip install frida
