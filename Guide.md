@@ -1,10 +1,8 @@
 # Android Mobile Application Testing Guide
 
-## ANDROID MOBILE APPLICATION TESTING
+### Setup your test machine and Mobile device/emulatro:
 
-### Tools Required
-
-#### 1. Mobile Security Framework (MobSF) for Android Testing
+#### 1. Install Mobile Security Framework (MobSF) for Android Testing
 - Download and install:
   - [Mobile-Security-Framework-MobSF-master](https://github.com/MobSF/Mobile-Security-Framework-MobSF)
   - [Win64 OpenSSL](https://slproweb.com/products/Win32OpenSSL.html)
@@ -37,7 +35,39 @@ pip install objection
 ```sh
 pip install --upgrade frida-tools
 ```
+#### 2.2 Push frida to device
+- Open platform tools folder CMD and push frida server file to device
+```sh
+C:\platform-tools>adb push C:\platform-tools\frida-server-15.1.4-android-x86_64 data/local/tmp
+Next- adb shell    —   su   —-- 	cd data/local/tmp	
+Download frid server-  https//github.com/frida/frida/releases
+chmod +x frida-server-15.1.4-android-x86_64
+./ frida-server-15.1.4-android-x86_64 (frida server should start)
+```
+#### 3. Platform Tools
+- Download and unzip: [ADB and Fastboot SDK Platform Tools](https://rootmygalaxy.net/download-latest-adb-and-fastboot-sdk-platform-tools/)
 
+#### 4. Emulator- 1. Genymotion - Android Emulator for App Testing
+- Download: [Genymotion](https://www.genymotion.com/download/)
+  
+#### 4.4. Emulator- 2. Android studio
+- Download: [Android studio](https://developer.android.com/studio)
+- For setup Watch:  [Android studio Setup](https://www.youtube.com/watch?v=3jZw8pIO-gw)
+  
+#### 5. Virtual Machine (VM Box)
+- Download: [Oracle VirtualBox](https://www.virtualbox.org/)
+
+#### 6. JDAX (Decompiler)
+- Download: [JDAX](https://github.com/skylot/jadx/releases)
+
+#### 7. Download Target APK and push to the device
+-Connect your device: Ensure your mobile device is connected to your computer via USB and USB debugging is enabled.
+- Open a terminal or command prompt: Navigate to the directory where your APK file is located.
+- Use the adb push command: Run the following command:
+```sh
+adb push your-app.apk /sdcard/
+```
+- 
 **Test 1 - No Root Detection**
 - Open ADB shell:
 ```sh
@@ -45,24 +75,26 @@ adb shell
 #ps -A | grep (package name)
 #id
 ```
+Run Frida in the mobile, open Frida in CMD and use this command 
+open the app in mobile before using this command
+```sh
+Frida-ps -Ua 
+Find the package ID and package name in the list. Then
+Option 1- use command {frida --codeshare dzonerzy/fridantiroot -f package_name -U} hit ENTER
+                    	{%resume} it should bypass the jailbreak detection
+Or
+Option 2- use command {objection -g (package ID) explore} hit Enter
+```
+**Test 2 - SSL Pinning Bypass**
+Connect mobile to PC, go to frida location open CMD.
+Use command {frida-ps -Ua}
+Then {objection -g (package ID) explore} and {iso sslpinning disable}
+To check the traffic- connect both PC & Mobile in the same network.
+ [Configure Burp proxy.](https://portswigger.net/burp/documentation/desktop/mobile/config-android-device)
+ [Watch SetUp.](https://www.youtube.com/watch?v=obPZB2YUAbI)
+Check in burp for the traffic.
 
-#### 3. Platform Tools
-- Download and unzip: [ADB and Fastboot SDK Platform Tools](https://rootmygalaxy.net/download-latest-adb-and-fastboot-sdk-platform-tools/)
-
-#### 4. Genymotion - Android Emulator for App Testing
-- Download: [Genymotion](https://www.genymotion.com/download/)
-
-#### 5. Virtual Machine (VM Box)
-- Download: [Oracle VirtualBox](https://www.virtualbox.org/)
-
-#### 6. JDAX (Decompiler)
-- Download: [JDAX](https://github.com/skylot/jadx/releases)
-
-#### 7. Download APK from Play Store
-- Copy the application URL from the Play Store and paste it into: [APKPure](https://apkpure.com/)
-- Download the APK.
-
-#### 8. Pull Local Storage Data
+#### 3. Pull Local Storage Data
 - Use ADB to pull data:
 ```sh
 adb pull data/data/(package name)
@@ -78,7 +110,7 @@ adb pull data/data/(package name)/(file name)
 ```
 - Open the `databases` folder and use an SQL DB browser to check for sensitive data.
 
-#### 9. Signature Verification
+#### 4. Signature Verification
 - Install `apksigner` in Kali Linux:
 ```sh
 apt-get install apksigner
@@ -89,8 +121,8 @@ apksigner verify -v (apk_name.apk)
 jarsigner -verify -verbose -certs my_application.apk
 ```
 
-#### 10. Task Hijacking
-- Decompile APK using apktool:
+#### 5. Task Hijacking
+- Decompile APK using apktool:https://www.filehorse.com/download-apk-easy-tool/
 ```sh
 apktool d com.example.app
 cd com.example.app
@@ -98,20 +130,21 @@ grep -r singleTask
 ```
 - Reference: [Android Task Hijacking](https://github.com/smhuda/android-task-hijacking)
 
-#### 11. APK Decompilation
+#### 6. APK Decompilation
 - Download APK Tool and copy the APK file inside the APK Tool folder.
 - Open CMD in that location and run:
 ```sh
 java -jar apktool.jar d (apk-name.apk)
+or use apk easy tool https://www.filehorse.com/download-apk-easy-tool/
 ```
 - Open the decompiled folder and check `AndroidManifest.xml` and `res/values/strings.xml` for sensitive information.
 
-#### 12. Exported Activity Testing
+#### 7. Exported Activity Testing
 ```sh
 adb shell am start -n package_name/activity_name
 ```
 
-#### 13. Real-time Mobile Screen Mirroring in Linux
+#### 8. Real-time Mobile Screen Mirroring in Linux
 - Use `scrcpy` for real-time mirroring.
 
 ---
